@@ -10,65 +10,94 @@ import java.util.Map;
 @Repository
 public class MovieRepository {
 
-    Map<String,Movie> movdb = new HashMap<>();
-    Map<String ,Director> directdb = new HashMap<>();
+    Map<String,Movie> movieDB = new HashMap<>();
+    Map<String,Director> directorDB = new HashMap<>();
+    Map<String,List<Movie>> pairDB=new HashMap<>();
 
-    Map<String, List<Movie>> mixeddb = new HashMap<>();
-    public void addMovie(Movie movie) {
-
-      movdb.put(movie.getName(),movie);
-    }
-
-    public void addDirector(Director director) {
-        directdb.put(director.getName(),director);
-    }
-
-    public void addMovieDirectorPair(String movieName, String directorName) {
-       Movie move = movdb.get(movieName);
-       if(move != null && directdb.containsKey(directorName)){
-           List<Movie> li = mixeddb.getOrDefault(directorName,new ArrayList<>());
-           li.add(move);
-           mixeddb.put(directorName,li);
-       }
-    }
-
-    public Movie getMovieByName(String name) {
-       return movdb.get(name);
-    }
-
-    public Director getDirectorByName(String name) {
-        return directdb.get(name);
+    public Map<String, Director> getDirectorDB() {
+        return directorDB;
     }
 
 
-    public List<Movie> getMoviesByDirectorName(String directorName) {
-        return mixeddb.get(directorName);
+
+    public Map<String, Movie> getMovieDB() {
+        return movieDB;
     }
 
-    public List<String> findAllMovies() {
-        return new ArrayList<>(movdb.keySet());
+
+    public void addMovieDirectorPair(String movieName, String directorName)
+    {
+        Movie movie= movieDB.get(movieName);
+        if(movie!=null && directorDB.containsKey(directorName)) {
+            List<Movie> movieList = pairDB.getOrDefault(directorName,new ArrayList<>());
+            movieList.add(movie);
+            pairDB.put(directorName,movieList);
+        }
+        return;
+    }
+
+    public void setMovieDB(Map<String, Movie> movieDB) {
+        this.movieDB = movieDB;
+    }
+
+    public void setDirectorDB(Map<String, Director> directorDB) {
+        this.directorDB = directorDB;
+    }
+
+    public Map<String, List<Movie>> getPairDB() {
+        return pairDB;
+    }
+
+    public void setPairDB(Map<String, List<Movie>> pairDB) {
+        this.pairDB = pairDB;
+    }
+
+    public Movie getMovieByName(String movieName) {
+        return movieDB.get(movieName);
+    }
+
+    public Director getDirectorByName(String directorName) {
+        return  directorDB.get(directorName);
     }
 
     public void deleteAllDirectors() {
-        for(List<Movie> movieList : mixeddb.values()){
+        for(List<Movie> movieList : pairDB.values()){
             for(Movie movie : movieList){
                 String movieName=movie.getName();
-                movdb.remove(movieName);
+                movieDB.remove(movieName);
             }
         }
-        directdb.clear();
-        mixeddb.clear();
+        directorDB.clear();
+        pairDB.clear();
+    }
+
+    public List<String> findAllMovies() {
+        return new ArrayList<>(movieDB.keySet());
+    }
+
+    public List<String> getMoviesByDirectorName(String directorName) {
+
+        List<String> movieName=new ArrayList<>();
+        if(pairDB.containsKey(directorName)){
+            List<Movie> Film=pairDB.get(directorName);
+            for(Movie movie: Film)
+            {
+                movieName.add(movie.getName());
+            }
+        }
+        return movieName;
     }
 
     public void deleteDirectorByName(String directorName) {
-        if(mixeddb.containsKey(directorName)){
-            List<Movie> movieList =mixeddb.get(directorName);
+
+        if(pairDB.containsKey(directorName)){
+            List<Movie> movieList =pairDB.get(directorName);
             for(Movie movie : movieList){
                 String movieName=movie.getName();
-                movdb.remove(movieName);
+                movieDB.remove(movieName);
             }
         }
-        mixeddb.remove(directorName);
-        directdb.remove(directorName);
+        pairDB.remove(directorName);
+        directorDB.remove(directorName);
     }
 }
